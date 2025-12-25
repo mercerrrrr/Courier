@@ -27,6 +27,20 @@ function toNum(value) {
   return Number.isFinite(n) ? n : null;
 }
 
+// Форматирует адрес, убирая почтовые индексы и лишние детали
+function formatAddressClean(displayName) {
+  if (!displayName) return displayName;
+
+  // Убираем почтовые индексы (цифры в формате 414000, 414-000 и т.д.)
+  let cleaned = displayName.replace(/,?\s*\d{3,6}(-\d{3,6})?\s*,?/g, ',');
+
+  // Убираем дубли запятых и лишние пробелы
+  cleaned = cleaned.replace(/,\s*,+/g, ',').replace(/,\s*$/g, '').replace(/^\s*,/g, '');
+  cleaned = cleaned.replace(/\s{2,}/g, ' ').trim();
+
+  return cleaned;
+}
+
 exports.searchAddress = async (req, res) => {
   try {
     const q = String(req.query.q || '').trim();
@@ -53,7 +67,7 @@ exports.searchAddress = async (req, res) => {
 
     const data = await resp.json();
     const results = (data || []).map((x) => ({
-      displayName: x.display_name,
+      displayName: formatAddressClean(x.display_name),
       lat: Number(x.lat),
       lng: Number(x.lon)
     }));
@@ -141,7 +155,7 @@ exports.reverseGeocode = async (req, res) => {
 
     const data = await resp.json();
     const result = {
-      displayName: data?.display_name || null,
+      displayName: formatAddressClean(data?.display_name) || null,
       lat,
       lng
     };
