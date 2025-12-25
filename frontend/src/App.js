@@ -48,7 +48,7 @@ const ASTRAKHAN_PARKS = [
     description:
       'Тень от деревьев, скамейки и спокойная атмосфера недалеко от центра. Удобно, если вы рядом с исторической частью города.',
     imageUrl:
-      'https://images.unsplash.com/photo-1500534314211-0a24cd03f2c0?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=800&q=80',
     mapsQuery: 'Петровский парк, Астрахань'
   },
   {
@@ -57,7 +57,7 @@ const ASTRAKHAN_PARKS = [
     description:
       'Прогулка вдоль воды, можно посидеть, подышать и дать отдых спине. Хороший вариант для смены обстановки.',
     imageUrl:
-      'https://images.unsplash.com/photo-1500534314211-0a24cd03f2c0?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
     mapsQuery: 'Набережная реки Волга, Астрахань'
   },
   {
@@ -66,7 +66,7 @@ const ASTRAKHAN_PARKS = [
     description:
       'Зелёная зона с дорожками и лавочками, удобно для короткого перерыва и лёгкой прогулки.',
     imageUrl:
-      'https://images.unsplash.com/photo-1500534314211-0a24cd03f2c0?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1529482576158-bdefc9410685?auto=format&fit=crop&w=800&q=80',
     mapsQuery: 'Городской сад, Астрахань'
   }
 ];
@@ -1492,8 +1492,24 @@ function AdminPanel({ token }) {
 
     try {
       const data = await geoReverse({ lat, lng });
-      const displayName = data?.result?.displayName;
+      let displayName = data?.result?.displayName;
+
       if (displayName) {
+        // Убираем почтовый индекс и лишнюю информацию для корректного отображения в Google Maps
+        // Удаляем индекс (6 цифр в начале или конце строки, или посередине)
+        displayName = displayName.replace(/\b\d{6}\b/g, '');
+
+        // Убираем "Россия", "Russian Federation", "RU" и подобное
+        displayName = displayName.replace(/,?\s*(Россия|Russia|Russian Federation|RU)\s*,?/gi, '');
+
+        // Убираем лишние запятые и пробелы
+        displayName = displayName.replace(/\s*,\s*,\s*/g, ', ').replace(/^\s*,\s*|\s*,\s*$/g, '').trim();
+
+        // Если адрес не содержит "Астрахань", добавляем в начало
+        if (!displayName.toLowerCase().includes('астрах')) {
+          displayName = `Астрахань, ${displayName}`;
+        }
+
         setAddress(displayName);
         setSelectedGeo({ displayName, lat, lng });
       }
@@ -1660,14 +1676,45 @@ function AdminPanel({ token }) {
               </div>
 
               <div className="mb-3">
-                <div className="text-small text-muted mb-2">
-                  Карта открывается на базе. Кликните по карте, чтобы выбрать адрес доставки.
-                </div>
-                <div className="rounded-4 overflow-hidden border">
+                <label className="form-label d-flex align-items-center justify-content-between">
+                  <span>📍 Выбор точки на карте</span>
+                  {selectedGeo && (
+                    <span className="badge bg-success" style={{ fontSize: '0.7rem' }}>
+                      Выбрано
+                    </span>
+                  )}
+                </label>
+                <div
+                  className="position-relative rounded-4 overflow-hidden border"
+                  style={{
+                    boxShadow: selectedGeo
+                      ? '0 0 0 3px rgba(56, 161, 105, 0.2)'
+                      : '0 4px 12px rgba(0,0,0,0.1)',
+                    transition: 'box-shadow 0.3s ease'
+                  }}
+                >
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 12,
+                      left: 12,
+                      zIndex: 1000,
+                      background: 'rgba(255, 255, 255, 0.95)',
+                      padding: '8px 12px',
+                      borderRadius: '12px',
+                      fontSize: '0.8rem',
+                      fontWeight: 500,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                      backdropFilter: 'blur(10px)'
+                    }}
+                  >
+                    💡 Кликните на карту для выбора адреса
+                  </div>
                   <MapContainer
                     center={[basePoint.lat, basePoint.lng]}
                     zoom={13}
                     scrollWheelZoom
+                    style={{ height: '400px', cursor: 'crosshair' }}
                   >
                     <TileLayer
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -1680,6 +1727,9 @@ function AdminPanel({ token }) {
                     <MapAutoCenter point={mapFocusPoint} />
                     <MapClickPicker onPick={pickMapPoint} />
                   </MapContainer>
+                </div>
+                <div className="text-small text-muted mt-2">
+                  🏢 База компании отмечена маркером • {selectedGeo ? '📍 Точка доставки выбрана' : 'Кликните на карту для выбора точки доставки'}
                 </div>
               </div>
 
