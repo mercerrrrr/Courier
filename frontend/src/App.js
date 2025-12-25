@@ -48,7 +48,7 @@ const ASTRAKHAN_PARKS = [
     description:
       'Тень от деревьев, скамейки и спокойная атмосфера недалеко от центра. Удобно, если вы рядом с исторической частью города.',
     imageUrl:
-      'https://images.unsplash.com/photo-1500534314211-0a24cd03f2c0?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=800&q=80',
     mapsQuery: 'Петровский парк, Астрахань'
   },
   {
@@ -57,7 +57,7 @@ const ASTRAKHAN_PARKS = [
     description:
       'Прогулка вдоль воды, можно посидеть, подышать и дать отдых спине. Хороший вариант для смены обстановки.',
     imageUrl:
-      'https://images.unsplash.com/photo-1500534314211-0a24cd03f2c0?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1505142468610-359e7d316be0?auto=format&fit=crop&w=800&q=80',
     mapsQuery: 'Набережная реки Волга, Астрахань'
   },
   {
@@ -66,7 +66,7 @@ const ASTRAKHAN_PARKS = [
     description:
       'Зелёная зона с дорожками и лавочками, удобно для короткого перерыва и лёгкой прогулки.',
     imageUrl:
-      'https://images.unsplash.com/photo-1500534314211-0a24cd03f2c0?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1571863533956-01c88e79957e?auto=format&fit=crop&w=800&q=80',
     mapsQuery: 'Городской сад, Астрахань'
   }
 ];
@@ -1661,13 +1661,17 @@ function AdminPanel({ token }) {
 
               <div className="mb-3">
                 <div className="text-small text-muted mb-2">
-                  Карта открывается на базе. Кликните по карте, чтобы выбрать адрес доставки.
+                  <strong>Кликните по карте</strong> для выбора адреса доставки. Карта центрирована на Астрахани.
                 </div>
-                <div className="rounded-4 overflow-hidden border">
+                <div
+                  className="rounded-4 overflow-hidden border shadow-sm"
+                  style={{ height: '450px', cursor: 'crosshair' }}
+                >
                   <MapContainer
                     center={[basePoint.lat, basePoint.lng]}
                     zoom={13}
                     scrollWheelZoom
+                    style={{ height: '100%', width: '100%' }}
                   >
                     <TileLayer
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
