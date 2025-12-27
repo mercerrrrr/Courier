@@ -1151,3 +1151,158 @@ input,
     opacity: 1;
   }
 }
+
+/* ========================================
+   РАСШИРЕННЫЕ НАСТРОЙКИ ДОСТУПНОСТИ
+   ======================================== */
+
+/* Межстрочный интервал */
+:root.line-spacing-normal {
+  --line-height-base: 1.5;
+}
+
+:root.line-spacing-comfortable {
+  --line-height-base: 1.75;
+}
+
+:root.line-spacing-large {
+  --line-height-base: 2;
+}
+
+:root.line-spacing-comfortable * {
+  line-height: 1.75 !important;
+}
+
+:root.line-spacing-large * {
+  line-height: 2 !important;
+}
+
+/* Уменьшенная анимация */
+:root.reduced-motion *,
+:root.reduced-motion *::before,
+:root.reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Крупные кнопки */
+:root.large-buttons .btn {
+  padding: 0.75rem 1.5rem !important;
+  font-size: 1.1rem !important;
+  min-height: 48px;
+  min-width: 100px;
+}
+
+:root.large-buttons .btn-sm {
+  padding: 0.6rem 1.2rem !important;
+  font-size: 1rem !important;
+  min-height: 40px;
+}
+
+:root.large-buttons .btn-lg {
+  padding: 1rem 2rem !important;
+  font-size: 1.25rem !important;
+  min-height: 56px;
+}
+
+:root.large-buttons .form-check-input {
+  width: 1.5em !important;
+  height: 1.5em !important;
+  margin-top: 0.15em;
+}
+
+:root.large-buttons .form-switch .form-check-input {
+  width: 3em !important;
+  height: 1.5em !important;
+}
+
+:root.large-buttons input[type="text"],
+:root.large-buttons input[type="number"],
+:root.large-buttons input[type="password"],
+:root.large-buttons select,
+:root.large-buttons textarea {
+  padding: 0.75rem 1rem !important;
+  font-size: 1.1rem !important;
+  min-height: 48px;
+}
+
+/* Применение масштаба шрифта ко всем элементам */
+:root.font-small {
+  font-size: calc(var(--base-font-size) * 0.875);
+}
+
+:root.font-normal {
+  font-size: var(--base-font-size);
+}
+
+:root.font-large {
+  font-size: calc(var(--base-font-size) * 1.125);
+}
+
+:root.font-xlarge {
+  font-size: calc(var(--base-font-size) * 1.25);
+}
+
+/* Улучшенная высокая контрастность */
+:root.high-contrast {
+  --gray-600: #000000;
+  --gray-700: #000000;
+  --gray-800: #000000;
+  
+  /* Усиление контраста текста */
+  color: #000000;
+}
+
+:root.high-contrast .text-muted {
+  color: #333333 !important;
+  opacity: 1 !important;
+}
+
+:root.high-contrast .btn-outline-secondary {
+  border-color: #000000 !important;
+  color: #000000 !important;
+}
+
+:root.high-contrast .btn-outline-secondary:hover {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+:root.high-contrast .form-control {
+  border: 2px solid #000000 !important;
+}
+
+:root.high-contrast .card,
+:root.high-contrast .alert {
+  border: 2px solid #000000 !important;
+}
+
+/* Улучшенная читаемость для людей с дислексией */
+:root.line-spacing-comfortable,
+:root.line-spacing-large {
+  letter-spacing: 0.03em;
+}
+
+/* Фокус для клавиатурной навигации */
+:root *:focus-visible {
+  outline: 3px solid var(--lavender-400) !important;
+  outline-offset: 2px !important;
+}
+
+:root.high-contrast *:focus-visible {
+  outline: 3px solid #000000 !important;
+  outline-offset: 3px !important;
+}
+
+/* Увеличение области клика для мобильных устройств */
+@media (hover: none) and (pointer: coarse) {
+  .btn,
+  .nav-link,
+  .form-check-input {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
