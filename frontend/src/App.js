@@ -132,6 +132,25 @@ function App() {
     }
   }, []);
 
+  // Применяем настройки доступности при загрузке приложения
+  useEffect(() => {
+    const savedFontSize = localStorage.getItem('accessibility-font-size') || 'normal';
+    const savedHighContrast = localStorage.getItem('accessibility-high-contrast') === 'true';
+
+    const root = document.documentElement;
+
+    // Применяем размер шрифта
+    root.classList.remove('font-small', 'font-normal', 'font-large', 'font-xlarge');
+    root.classList.add(`font-${savedFontSize}`);
+
+    // Применяем высокую контрастность
+    if (savedHighContrast) {
+      root.classList.add('high-contrast');
+    } else {
+      root.classList.remove('high-contrast');
+    }
+  }, []);
+
   function handleUserUpdated(user) {
     setCurrentUser(user);
     if (user) {
@@ -473,6 +492,10 @@ function ShiftDashboard({ token }) {
   // заказы из orders-service
   const [orders, setOrders] = useState([]);
 
+  // Координаты базы и места отдыха для маршрутов
+  const [baseCoords, setBaseCoords] = useState({ lat: 46.3497, lng: 48.0408 }); // fallback для Астрахани
+  const [restCoords, setRestCoords] = useState({ lat: 46.3497, lng: 48.0408 }); // fallback
+
   // В work-service время хранится в секундах (виртуальных).
   // Для UI удобнее показывать *минуты* и (опционально) человекочитаемый формат.
   function formatDuration(seconds) {
@@ -566,6 +589,36 @@ function ShiftDashboard({ token }) {
     return () => clearInterval(intervalId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
+
+  // Получаем координаты базы и места отдыха для правильных маршрутов
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        // Получаем координаты базы
+        const baseData = await geoSearchAddress(BASE_ADDRESS);
+        const baseFirst = baseData?.results?.[0];
+        if (!cancelled && baseFirst) {
+          setBaseCoords({ lat: baseFirst.lat, lng: baseFirst.lng });
+        }
+
+        // Получаем координаты места отдыха
+        const restData = await geoSearchAddress(REST_PLACE_ADDRESS);
+        const restFirst = restData?.results?.[0];
+        if (!cancelled && restFirst) {
+          setRestCoords({ lat: restFirst.lat, lng: restFirst.lng });
+        }
+      } catch (e) {
+        console.error('Geocoding failed:', e);
+        // Используем fallback координаты
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function handleStartShift() {
     try {
@@ -667,13 +720,20 @@ function ShiftDashboard({ token }) {
   const isBreak = status === 'BREAK';
   const targetAddress = isBreak ? REST_PLACE_ADDRESS : orderDestinationAddress;
 
-  const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(
-    targetAddress
-  )}&output=embed`;
+  // Определяем целевые координаты в зависимости от состояния
+  let targetCoords;
+  if (isBreak) {
+    targetCoords = restCoords;
+  } else if (activeOrder && activeOrder.destLat && activeOrder.destLng) {
+    targetCoords = { lat: activeOrder.destLat, lng: activeOrder.destLng };
+  } else {
+    targetCoords = baseCoords;
+  }
 
-  const mapsRouteUrl = `https://www.google.com/maps/dir/${encodeURIComponent(
-    BASE_ADDRESS
-  )}/${encodeURIComponent(targetAddress)}`;
+  // Используем координаты для более точных маршрутов в Google Maps
+  const mapEmbedUrl = `https://www.google.com/maps?q=${targetCoords.lat},${targetCoords.lng}&output=embed`;
+
+  const mapsRouteUrl = `https://www.google.com/maps/dir/${baseCoords.lat},${baseCoords.lng}/${targetCoords.lat},${targetCoords.lng}`;
 
   let title = 'Статус смены';
   let statusBadge = null;
@@ -1285,6 +1345,148 @@ function ProfileView({ user, token, onUserUpdated }) {
             </button>
           </form>
         </div>
+      </div>
+
+      {/* Настройки доступности */}
+      <div className="mt-4">
+        <AccessibilitySettings />
+      </div>
+    </div>
+  );
+}
+
+/* ---------- НАСТРОЙКИ ДОСТУПНОСТИ ---------- */
+
+function AccessibilitySettings() {
+  const [fontSize, setFontSize] = useState('normal');
+  const [highContrast, setHighContrast] = useState(false);
+
+  // Загружаем настройки из localStorage при монтировании
+  useEffect(() => {
+    const savedFontSize = localStorage.getItem('accessibility-font-size') || 'normal';
+    const savedHighContrast = localStorage.getItem('accessibility-high-contrast') === 'true';
+
+    setFontSize(savedFontSize);
+    setHighContrast(savedHighContrast);
+
+    applySettings(savedFontSize, savedHighContrast);
+  }, []);
+
+  function applySettings(newFontSize, newHighContrast) {
+    const root = document.documentElement;
+
+    // Удаляем все классы размера шрифта
+    root.classList.remove('font-small', 'font-normal', 'font-large', 'font-xlarge');
+
+    // Добавляем нужный класс
+    root.classList.add(`font-${newFontSize}`);
+
+    // Применяем высокую контрастность
+    if (newHighContrast) {
+      root.classList.add('high-contrast');
+    } else {
+      root.classList.remove('high-contrast');
+    }
+  }
+
+  function handleFontSizeChange(newSize) {
+    setFontSize(newSize);
+    localStorage.setItem('accessibility-font-size', newSize);
+    applySettings(newSize, highContrast);
+  }
+
+  function handleHighContrastChange(e) {
+    const newValue = e.target.checked;
+    setHighContrast(newValue);
+    localStorage.setItem('accessibility-high-contrast', newValue);
+    applySettings(fontSize, newValue);
+  }
+
+  return (
+    <div className="p-3 p-md-4 rounded-4 profile-card-inner">
+      <h5 className="mb-3">⚙️ Настройки доступности</h5>
+      <p className="text-muted mb-4" style={{ fontSize: '0.9em' }}>
+        Настройте интерфейс для комфортного использования
+      </p>
+
+      {/* Размер шрифта */}
+      <div className="mb-4">
+        <label className="form-label fw-bold">Размер шрифта</label>
+        <div className="btn-group w-100" role="group">
+          <input
+            type="radio"
+            className="btn-check"
+            name="fontSize"
+            id="fontSmall"
+            checked={fontSize === 'small'}
+            onChange={() => handleFontSizeChange('small')}
+          />
+          <label className="btn btn-outline-secondary" htmlFor="fontSmall">
+            Малый
+          </label>
+
+          <input
+            type="radio"
+            className="btn-check"
+            name="fontSize"
+            id="fontNormal"
+            checked={fontSize === 'normal'}
+            onChange={() => handleFontSizeChange('normal')}
+          />
+          <label className="btn btn-outline-secondary" htmlFor="fontNormal">
+            Обычный
+          </label>
+
+          <input
+            type="radio"
+            className="btn-check"
+            name="fontSize"
+            id="fontLarge"
+            checked={fontSize === 'large'}
+            onChange={() => handleFontSizeChange('large')}
+          />
+          <label className="btn btn-outline-secondary" htmlFor="fontLarge">
+            Большой
+          </label>
+
+          <input
+            type="radio"
+            className="btn-check"
+            name="fontSize"
+            id="fontXLarge"
+            checked={fontSize === 'xlarge'}
+            onChange={() => handleFontSizeChange('xlarge')}
+          />
+          <label className="btn btn-outline-secondary" htmlFor="fontXLarge">
+            Очень большой
+          </label>
+        </div>
+        <div className="form-text text-small mt-2">
+          Изменение размера шрифта применится ко всему интерфейсу
+        </div>
+      </div>
+
+      {/* Высокая контрастность */}
+      <div className="mb-3">
+        <div className="form-check form-switch">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            id="highContrast"
+            checked={highContrast}
+            onChange={handleHighContrastChange}
+          />
+          <label className="form-check-label fw-bold" htmlFor="highContrast">
+            Высокая контрастность
+          </label>
+        </div>
+        <div className="form-text text-small mt-1">
+          Увеличивает контрастность цветов для лучшей читаемости
+        </div>
+      </div>
+
+      <div className="alert alert-info py-2 mt-3" style={{ fontSize: '0.85em' }}>
+        <strong>💡 Подсказка:</strong> Настройки сохраняются автоматически и применяются при следующем входе
       </div>
     </div>
   );
