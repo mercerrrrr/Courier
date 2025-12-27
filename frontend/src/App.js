@@ -136,6 +136,9 @@ function App() {
   useEffect(() => {
     const savedFontSize = localStorage.getItem('accessibility-font-size') || 'normal';
     const savedHighContrast = localStorage.getItem('accessibility-high-contrast') === 'true';
+    const savedReducedMotion = localStorage.getItem('accessibility-reduced-motion') === 'true';
+    const savedLineSpacing = localStorage.getItem('accessibility-line-spacing') || 'normal';
+    const savedLargeButtons = localStorage.getItem('accessibility-large-buttons') === 'true';
 
     const root = document.documentElement;
 
@@ -148,6 +151,24 @@ function App() {
       root.classList.add('high-contrast');
     } else {
       root.classList.remove('high-contrast');
+    }
+
+    // Применяем уменьшенную анимацию
+    if (savedReducedMotion) {
+      root.classList.add('reduced-motion');
+    } else {
+      root.classList.remove('reduced-motion');
+    }
+
+    // Применяем межстрочный интервал
+    root.classList.remove('line-spacing-normal', 'line-spacing-comfortable', 'line-spacing-large');
+    root.classList.add(`line-spacing-${savedLineSpacing}`);
+
+    // Применяем крупные кнопки
+    if (savedLargeButtons) {
+      root.classList.add('large-buttons');
+    } else {
+      root.classList.remove('large-buttons');
     }
   }, []);
 
@@ -1245,19 +1266,23 @@ function ProfileView({ user, token, onUserUpdated }) {
     setError('');
     setMessage('');
 
-    if (!editName && !editAvatarUrl) {
-      setError('Нет данных для обновления');
+    // Проверяем, были ли изменения
+    const nameChanged = editName !== (user?.name || '');
+    const avatarChanged = editAvatarUrl !== (user?.avatar_url || '');
+
+    if (!nameChanged && !avatarChanged) {
+      setError('Нет изменений для сохранения');
       return;
     }
 
     try {
       setSaving(true);
       const data = await updateProfile(token, {
-        name: editName,
-        avatarUrl: editAvatarUrl
+        name: editName || undefined,
+        avatarUrl: editAvatarUrl || undefined
       });
       onUserUpdated(data.user);
-      setMessage('Профиль обновлён');
+      setMessage('Профиль обновлён успешно!');
     } catch (e) {
       console.error(e);
       setError(e.message || 'Не удалось обновить профиль');
@@ -1360,58 +1385,136 @@ function ProfileView({ user, token, onUserUpdated }) {
 function AccessibilitySettings() {
   const [fontSize, setFontSize] = useState('normal');
   const [highContrast, setHighContrast] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const [lineSpacing, setLineSpacing] = useState('normal');
+  const [largeButtons, setLargeButtons] = useState(false);
 
   // Загружаем настройки из localStorage при монтировании
   useEffect(() => {
     const savedFontSize = localStorage.getItem('accessibility-font-size') || 'normal';
     const savedHighContrast = localStorage.getItem('accessibility-high-contrast') === 'true';
+    const savedReducedMotion = localStorage.getItem('accessibility-reduced-motion') === 'true';
+    const savedLineSpacing = localStorage.getItem('accessibility-line-spacing') || 'normal';
+    const savedLargeButtons = localStorage.getItem('accessibility-large-buttons') === 'true';
 
     setFontSize(savedFontSize);
     setHighContrast(savedHighContrast);
+    setReducedMotion(savedReducedMotion);
+    setLineSpacing(savedLineSpacing);
+    setLargeButtons(savedLargeButtons);
 
-    applySettings(savedFontSize, savedHighContrast);
+    applySettings(savedFontSize, savedHighContrast, savedReducedMotion, savedLineSpacing, savedLargeButtons);
   }, []);
 
-  function applySettings(newFontSize, newHighContrast) {
+  function applySettings(newFontSize, newHighContrast, newReducedMotion, newLineSpacing, newLargeButtons) {
     const root = document.documentElement;
 
-    // Удаляем все классы размера шрифта
+    // Размер шрифта
     root.classList.remove('font-small', 'font-normal', 'font-large', 'font-xlarge');
-
-    // Добавляем нужный класс
     root.classList.add(`font-${newFontSize}`);
 
-    // Применяем высокую контрастность
+    // Высокая контрастность
     if (newHighContrast) {
       root.classList.add('high-contrast');
     } else {
       root.classList.remove('high-contrast');
+    }
+
+    // Уменьшенная анимация
+    if (newReducedMotion) {
+      root.classList.add('reduced-motion');
+    } else {
+      root.classList.remove('reduced-motion');
+    }
+
+    // Межстрочный интервал
+    root.classList.remove('line-spacing-normal', 'line-spacing-comfortable', 'line-spacing-large');
+    root.classList.add(`line-spacing-${newLineSpacing}`);
+
+    // Крупные кнопки
+    if (newLargeButtons) {
+      root.classList.add('large-buttons');
+    } else {
+      root.classList.remove('large-buttons');
     }
   }
 
   function handleFontSizeChange(newSize) {
     setFontSize(newSize);
     localStorage.setItem('accessibility-font-size', newSize);
-    applySettings(newSize, highContrast);
+    applySettings(newSize, highContrast, reducedMotion, lineSpacing, largeButtons);
   }
 
   function handleHighContrastChange(e) {
     const newValue = e.target.checked;
     setHighContrast(newValue);
     localStorage.setItem('accessibility-high-contrast', newValue);
-    applySettings(fontSize, newValue);
+    applySettings(fontSize, newValue, reducedMotion, lineSpacing, largeButtons);
+  }
+
+  function handleReducedMotionChange(e) {
+    const newValue = e.target.checked;
+    setReducedMotion(newValue);
+    localStorage.setItem('accessibility-reduced-motion', newValue);
+    applySettings(fontSize, highContrast, newValue, lineSpacing, largeButtons);
+  }
+
+  function handleLineSpacingChange(newSpacing) {
+    setLineSpacing(newSpacing);
+    localStorage.setItem('accessibility-line-spacing', newSpacing);
+    applySettings(fontSize, highContrast, reducedMotion, newSpacing, largeButtons);
+  }
+
+  function handleLargeButtonsChange(e) {
+    const newValue = e.target.checked;
+    setLargeButtons(newValue);
+    localStorage.setItem('accessibility-large-buttons', newValue);
+    applySettings(fontSize, highContrast, reducedMotion, lineSpacing, newValue);
+  }
+
+  function resetToDefaults() {
+    const defaults = {
+      fontSize: 'normal',
+      highContrast: false,
+      reducedMotion: false,
+      lineSpacing: 'normal',
+      largeButtons: false
+    };
+
+    setFontSize(defaults.fontSize);
+    setHighContrast(defaults.highContrast);
+    setReducedMotion(defaults.reducedMotion);
+    setLineSpacing(defaults.lineSpacing);
+    setLargeButtons(defaults.largeButtons);
+
+    localStorage.setItem('accessibility-font-size', defaults.fontSize);
+    localStorage.setItem('accessibility-high-contrast', defaults.highContrast);
+    localStorage.setItem('accessibility-reduced-motion', defaults.reducedMotion);
+    localStorage.setItem('accessibility-line-spacing', defaults.lineSpacing);
+    localStorage.setItem('accessibility-large-buttons', defaults.largeButtons);
+
+    applySettings(defaults.fontSize, defaults.highContrast, defaults.reducedMotion, defaults.lineSpacing, defaults.largeButtons);
   }
 
   return (
     <div className="p-3 p-md-4 rounded-4 profile-card-inner">
-      <h5 className="mb-3">⚙️ Настройки доступности</h5>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h5 className="mb-0">⚙️ Настройки доступности</h5>
+        <button
+          type="button"
+          className="btn btn-sm btn-outline-secondary"
+          onClick={resetToDefaults}
+        >
+          Сбросить
+        </button>
+      </div>
       <p className="text-muted mb-4" style={{ fontSize: '0.9em' }}>
-        Настройте интерфейс для комфортного использования
+        Настройте интерфейс для комфортного использования. Все настройки применяются мгновенно и сохраняются автоматически.
       </p>
 
       {/* Размер шрифта */}
       <div className="mb-4">
-        <label className="form-label fw-bold">Размер шрифта</label>
+        <label className="form-label fw-bold">📝 Размер шрифта</label>
         <div className="btn-group w-100" role="group">
           <input
             type="radio"
@@ -1466,6 +1569,51 @@ function AccessibilitySettings() {
         </div>
       </div>
 
+      {/* Межстрочный интервал */}
+      <div className="mb-4">
+        <label className="form-label fw-bold">📏 Межстрочный интервал</label>
+        <div className="btn-group w-100" role="group">
+          <input
+            type="radio"
+            className="btn-check"
+            name="lineSpacing"
+            id="lineNormal"
+            checked={lineSpacing === 'normal'}
+            onChange={() => handleLineSpacingChange('normal')}
+          />
+          <label className="btn btn-outline-secondary" htmlFor="lineNormal">
+            Обычный
+          </label>
+
+          <input
+            type="radio"
+            className="btn-check"
+            name="lineSpacing"
+            id="lineComfortable"
+            checked={lineSpacing === 'comfortable'}
+            onChange={() => handleLineSpacingChange('comfortable')}
+          />
+          <label className="btn btn-outline-secondary" htmlFor="lineComfortable">
+            Комфортный
+          </label>
+
+          <input
+            type="radio"
+            className="btn-check"
+            name="lineSpacing"
+            id="lineLarge"
+            checked={lineSpacing === 'large'}
+            onChange={() => handleLineSpacingChange('large')}
+          />
+          <label className="btn btn-outline-secondary" htmlFor="lineLarge">
+            Большой
+          </label>
+        </div>
+        <div className="form-text text-small mt-2">
+          Увеличение интервала между строками улучшает читаемость
+        </div>
+      </div>
+
       {/* Высокая контрастность */}
       <div className="mb-3">
         <div className="form-check form-switch">
@@ -1477,16 +1625,54 @@ function AccessibilitySettings() {
             onChange={handleHighContrastChange}
           />
           <label className="form-check-label fw-bold" htmlFor="highContrast">
-            Высокая контрастность
+            🎨 Высокая контрастность
           </label>
         </div>
         <div className="form-text text-small mt-1">
-          Увеличивает контрастность цветов для лучшей читаемости
+          Увеличивает контрастность цветов для людей с нарушениями зрения
         </div>
       </div>
 
-      <div className="alert alert-info py-2 mt-3" style={{ fontSize: '0.85em' }}>
-        <strong>💡 Подсказка:</strong> Настройки сохраняются автоматически и применяются при следующем входе
+      {/* Уменьшенная анимация */}
+      <div className="mb-3">
+        <div className="form-check form-switch">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            id="reducedMotion"
+            checked={reducedMotion}
+            onChange={handleReducedMotionChange}
+          />
+          <label className="form-check-label fw-bold" htmlFor="reducedMotion">
+            🎬 Уменьшить анимацию
+          </label>
+        </div>
+        <div className="form-text text-small mt-1">
+          Отключает или уменьшает анимацию для людей с вестибулярными расстройствами
+        </div>
+      </div>
+
+      {/* Крупные кнопки */}
+      <div className="mb-3">
+        <div className="form-check form-switch">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            id="largeButtons"
+            checked={largeButtons}
+            onChange={handleLargeButtonsChange}
+          />
+          <label className="form-check-label fw-bold" htmlFor="largeButtons">
+            🔘 Крупные кнопки
+          </label>
+        </div>
+        <div className="form-text text-small mt-1">
+          Увеличивает размер кнопок для людей с моторными нарушениями
+        </div>
+      </div>
+
+      <div className="alert alert-info py-2 mt-4" style={{ fontSize: '0.85em' }}>
+        <strong>💡 Подсказка:</strong> Все настройки сохраняются автоматически и применяются при следующем входе в систему
       </div>
     </div>
   );
