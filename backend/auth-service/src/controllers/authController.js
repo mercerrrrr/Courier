@@ -160,7 +160,7 @@ exports.getMe = async (req, res) => {
   }
 };
 
-// PUT /auth/me
+// PUT /auth/profile
 exports.updateProfile = async (req, res) => {
   const userId = req.user && req.user.id;
   const { name, avatarUrl } = req.body;
@@ -169,9 +169,8 @@ exports.updateProfile = async (req, res) => {
     return res.status(401).json({ message: 'Не найден идентификатор пользователя' });
   }
 
-  if (!name && !avatarUrl) {
-    return res.status(400).json({ message: 'Нет данных для обновления профиля' });
-  }
+  // Убрали строгую проверку - разрешаем обновление любого поля
+  // COALESCE обработает null значения корректно
 
   try {
     const result = await db.query(
