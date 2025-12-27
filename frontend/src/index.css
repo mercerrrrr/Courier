@@ -49,12 +49,65 @@
   --shadow-lg: 0 16px 48px rgba(108, 117, 125, 0.15);
   --shadow-xl: 0 24px 64px rgba(108, 117, 125, 0.18);
 
+  /* Настройки доступности - размер шрифта */
+  --font-scale: 1;
+  --base-font-size: 16px;
+
   /* Скругления */
   --radius-sm: 12px;
   --radius-md: 16px;
   --radius-lg: 24px;
   --radius-xl: 32px;
   --radius-full: 9999px;
+}
+
+/* Размеры шрифта для доступности */
+:root.font-small {
+  --font-scale: 0.875;
+}
+
+:root.font-normal {
+  --font-scale: 1;
+}
+
+:root.font-large {
+  --font-scale: 1.125;
+}
+
+:root.font-xlarge {
+  --font-scale: 1.25;
+}
+
+/* Высокая контрастность для доступности */
+:root.high-contrast {
+  --peach-100: #FFE5D0;
+  --peach-200: #FFD0B0;
+  --peach-300: #FFB890;
+  --peach-400: #FF9060;
+
+  --mint-100: #D0F0E0;
+  --mint-200: #B0E0C0;
+  --mint-300: #90D0A0;
+  --mint-400: #70C080;
+
+  --lavender-100: #E0D0FF;
+  --lavender-200: #C0B0F0;
+  --lavender-300: #A090E0;
+  --lavender-400: #8070D0;
+
+  --gray-100: #E0E0E0;
+  --gray-200: #C0C0C0;
+  --gray-300: #A0A0A0;
+  --gray-400: #808080;
+  --gray-500: #606060;
+  --gray-600: #404040;
+  --gray-700: #202020;
+  --gray-800: #000000;
+}
+
+/* Применение масштабирования шрифта */
+body {
+  font-size: calc(var(--base-font-size) * var(--font-scale));
 }
 
 /* ========================================
