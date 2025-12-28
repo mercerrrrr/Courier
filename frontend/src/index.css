@@ -49,12 +49,65 @@
   --shadow-lg: 0 16px 48px rgba(108, 117, 125, 0.15);
   --shadow-xl: 0 24px 64px rgba(108, 117, 125, 0.18);
 
+  /* Настройки доступности - размер шрифта */
+  --font-scale: 1;
+  --base-font-size: 16px;
+
   /* Скругления */
   --radius-sm: 12px;
   --radius-md: 16px;
   --radius-lg: 24px;
   --radius-xl: 32px;
   --radius-full: 9999px;
+}
+
+/* Размеры шрифта для доступности */
+:root.font-small {
+  --font-scale: 0.875;
+}
+
+:root.font-normal {
+  --font-scale: 1;
+}
+
+:root.font-large {
+  --font-scale: 1.125;
+}
+
+:root.font-xlarge {
+  --font-scale: 1.25;
+}
+
+/* Высокая контрастность для доступности */
+:root.high-contrast {
+  --peach-100: #FFE5D0;
+  --peach-200: #FFD0B0;
+  --peach-300: #FFB890;
+  --peach-400: #FF9060;
+
+  --mint-100: #D0F0E0;
+  --mint-200: #B0E0C0;
+  --mint-300: #90D0A0;
+  --mint-400: #70C080;
+
+  --lavender-100: #E0D0FF;
+  --lavender-200: #C0B0F0;
+  --lavender-300: #A090E0;
+  --lavender-400: #8070D0;
+
+  --gray-100: #E0E0E0;
+  --gray-200: #C0C0C0;
+  --gray-300: #A0A0A0;
+  --gray-400: #808080;
+  --gray-500: #606060;
+  --gray-600: #404040;
+  --gray-700: #202020;
+  --gray-800: #000000;
+}
+
+/* Применение масштабирования шрифта */
+body {
+  font-size: calc(var(--base-font-size) * var(--font-scale));
 }
 
 /* ========================================
@@ -1098,3 +1151,158 @@ input,
     opacity: 1;
   }
 }
+
+/* ========================================
+   РАСШИРЕННЫЕ НАСТРОЙКИ ДОСТУПНОСТИ
+   ======================================== */
+
+/* Межстрочный интервал */
+:root.line-spacing-normal {
+  --line-height-base: 1.5;
+}
+
+:root.line-spacing-comfortable {
+  --line-height-base: 1.75;
+}
+
+:root.line-spacing-large {
+  --line-height-base: 2;
+}
+
+:root.line-spacing-comfortable * {
+  line-height: 1.75 !important;
+}
+
+:root.line-spacing-large * {
+  line-height: 2 !important;
+}
+
+/* Уменьшенная анимация */
+:root.reduced-motion *,
+:root.reduced-motion *::before,
+:root.reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Крупные кнопки */
+:root.large-buttons .btn {
+  padding: 0.75rem 1.5rem !important;
+  font-size: 1.1rem !important;
+  min-height: 48px;
+  min-width: 100px;
+}
+
+:root.large-buttons .btn-sm {
+  padding: 0.6rem 1.2rem !important;
+  font-size: 1rem !important;
+  min-height: 40px;
+}
+
+:root.large-buttons .btn-lg {
+  padding: 1rem 2rem !important;
+  font-size: 1.25rem !important;
+  min-height: 56px;
+}
+
+:root.large-buttons .form-check-input {
+  width: 1.5em !important;
+  height: 1.5em !important;
+  margin-top: 0.15em;
+}
+
+:root.large-buttons .form-switch .form-check-input {
+  width: 3em !important;
+  height: 1.5em !important;
+}
+
+:root.large-buttons input[type="text"],
+:root.large-buttons input[type="number"],
+:root.large-buttons input[type="password"],
+:root.large-buttons select,
+:root.large-buttons textarea {
+  padding: 0.75rem 1rem !important;
+  font-size: 1.1rem !important;
+  min-height: 48px;
+}
+
+/* Применение масштаба шрифта ко всем элементам */
+:root.font-small {
+  font-size: calc(var(--base-font-size) * 0.875);
+}
+
+:root.font-normal {
+  font-size: var(--base-font-size);
+}
+
+:root.font-large {
+  font-size: calc(var(--base-font-size) * 1.125);
+}
+
+:root.font-xlarge {
+  font-size: calc(var(--base-font-size) * 1.25);
+}
+
+/* Улучшенная высокая контрастность */
+:root.high-contrast {
+  --gray-600: #000000;
+  --gray-700: #000000;
+  --gray-800: #000000;
+  
+  /* Усиление контраста текста */
+  color: #000000;
+}
+
+:root.high-contrast .text-muted {
+  color: #333333 !important;
+  opacity: 1 !important;
+}
+
+:root.high-contrast .btn-outline-secondary {
+  border-color: #000000 !important;
+  color: #000000 !important;
+}
+
+:root.high-contrast .btn-outline-secondary:hover {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+:root.high-contrast .form-control {
+  border: 2px solid #000000 !important;
+}
+
+:root.high-contrast .card,
+:root.high-contrast .alert {
+  border: 2px solid #000000 !important;
+}
+
+/* Улучшенная читаемость для людей с дислексией */
+:root.line-spacing-comfortable,
+:root.line-spacing-large {
+  letter-spacing: 0.03em;
+}
+
+/* Фокус для клавиатурной навигации */
+:root *:focus-visible {
+  outline: 3px solid var(--lavender-400) !important;
+  outline-offset: 2px !important;
+}
+
+:root.high-contrast *:focus-visible {
+  outline: 3px solid #000000 !important;
+  outline-offset: 3px !important;
+}
+
+/* Увеличение области клика для мобильных устройств */
+@media (hover: none) and (pointer: coarse) {
+  .btn,
+  .nav-link,
+  .form-check-input {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+

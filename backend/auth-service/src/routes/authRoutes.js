@@ -14,6 +14,6 @@ router.post('/login', authController.login);
 router.get('/me', authMiddleware, authController.getMe);
 
 // Обновление профиля текущего пользователя
-router.put('/me', authMiddleware, authController.updateProfile);
+router.put('/profile', authMiddleware, authController.updateProfile);
 
 module.exports = router;
