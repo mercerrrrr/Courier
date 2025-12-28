@@ -162,7 +162,7 @@ exports.getMe = async (req, res) => {
 
 // PUT /auth/profile
 exports.updateProfile = async (req, res) => {
-  const userId = req.user && req.user.id;
+  const userId = req.user?.id;
   const { name, avatarUrl } = req.body;
 
   if (!userId) {
